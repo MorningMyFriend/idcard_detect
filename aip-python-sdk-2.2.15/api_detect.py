@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import ssl
 import os
 import sys
 import json
@@ -24,28 +24,51 @@ else:
     from urllib import urlencode
 
 # 防止https证书校验不正确
-import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-API_KEY = 'i037oS7fcc2dFVy6GC2Gjxkz'
-SECRET_KEY = 'GCkxU2xKsw4NeAEsjxgxoEFa4S3mT1NL'
+ACCESS = [
+    ['kCdABVu26hU8Cq8Dy9YhelmP', 'M5gBftIvz8dN8Mhxh8mVaWKKsccR68Q9'],
+    ['zXNGo333MUnAiVKlhYollhAI', 'caOFbuo7MbAZPtRIbSNGunGRQNjj696T'],
+    ['k6FgI8fSqPPYFt2lSGBFCbYE', 'BElpKbfUwN8pv1TM3aEhofKUEljbugH4'],
+    ['KTgCUQ2ngP7XTr3inawvPzlh', 'gSPGZ0OAUniG3nZHfEhGbWtEjT8CGNNG'],
+    ['Lnxl1KB4dw3m3ckGfqej3lb6', 'RTfWN9XaEN1hjv59uexEFoOQRVacwY7V'],
+    ['dhZlc1Mk2dBcMExlR4F8p8xg', 'UHy6MUz0GCFG0qAC57G9QvHkrjzGnCws'],
+    ['Be1sqL1mQFgVl2dCtIyUNlfY', 'ovPoh950C6363vw0sy5cYSF8RByVPlYz'],
+    ['gCsVEjEYYU3v5oxB5ax6hOuQ', 'P5DGwF8vvpwpdkWNcrBtjrMCiRrSZvFK'],
+    ['091CGibCRl1vMLcDSCLA804k', '5hnAsOatOoZRI6BWHVGUZo4Dl7zcVeSH'],
+    ['dGriMDIayDOew3Gqb6AF42zf', 'SzhHVPFjlO4HnmBLwjFhC74W4rRxWOzf'],
+    ['KigIVEYDBc3Ytnd0KUtAMXvF', '3hPD5xOCFfVziKUqmxUGPIGBdDgBZCuN'],
+    ['D38PFe7eLzXDDvDtDiLUYB4v', 'jReMtbEyM1x5B1jBEHMfA5GksxGjVheB'],
+    ['NYmo1uIg6dmUlAGfBEl4Trfa', '9wnRGawclG6eXsMY8ecjdmDGwvTZD0a7'],
+    ['3fS8EYWdDnth1FcjT8P1sFkg', '6Ix1cEcabNQKySPZjVzdlRD9ByZedfqg'],
+    ['jhXYFBCrtNCa1bTxbrv27ZoH', 'rlGZNEb7GCGOwvCatqwzNNwDyxZNOGCd'],
+    ['W7kKol6jCgpaDjww0BZg6NB2', 'bmZ1xAb5Yv3BiA7bfBwQRlVlCE32veAD'],
+    ['srrj7Uhr7Yz2V6lm0PLS3DdU', 'vYekOoeUEy2OrejALb5lP0mPukF6rC4r'],
+    ['yYas4BLER76LNDzHYy9uS63R', 'ulaNYqzNPEqzS9rFeq3ZSUGgvUiroezo'],
+    ['fvi8ijsVrGB52lxvikWki392', '2G7Ok49SdTYBvePr1RQ7d4OnOAvqr3PF'],
+    ['qlhqMQo14a1OSmB1Z3yR1d2x', 'HEF5USShKkFIeMMfIctz2qvAvqbgIRbj'],
+    ['eDPxnqHxil6W2AvApi4jibsk', 'TagGP4pawG2GKNAezgFvvSxAGbaRQxgc'],
+    ['gsnOIiQ58zttUlAiiVfebKLE', 'QYj0Bl3msFpGP411dIdXhZb7l2CAN8Mq'],
+    ['Bn0LQwb8Uc2Dzgi8SHmH9Tyo', 'ZVgdOzvWOl4TNNMsi8d6zePchsYwLBdd']
+]
 
-# API_KEY = 'k6FgI8fSqPPYFt2lSGBFCbYE'
-# SECRET_KEY = 'BElpKbfUwN8pv1TM3aEhofKUEljbugH4'
+OCR_URL = {
+    # 基础版本
+    'general_basic': "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic",  # 50000/day
 
-# API_KEY = 'KTgCUQ2ngP7XTr3inawvPzlh'
-# SECRET_KEY = 'gSPGZ0OAUniG3nZHfEhGbWtEjT8CGNNG'
+    # 身份证url
+    'idcard':  "https://aip.baidubce.com/rest/2.0/ocr/v1/idcard",  # 5000/day
 
-ACCESS = [['i037oS7fcc2dFVy6GC2Gjxkz', 'GCkxU2xKsw4NeAEsjxgxoEFa4S3mT1NL'],
-          ['k6FgI8fSqPPYFt2lSGBFCbYE', 'BElpKbfUwN8pv1TM3aEhofKUEljbugH4'],
-          ['KTgCUQ2ngP7XTr3inawvPzlh', 'gSPGZ0OAUniG3nZHfEhGbWtEjT8CGNNG'],
-          ['Lnxl1KB4dw3m3ckGfqej3lb6', 'RTfWN9XaEN1hjv59uexEFoOQRVacwY7V'],
-          ['dhZlc1Mk2dBcMExlR4F8p8xg', 'UHy6MUz0GCFG0qAC57G9QvHkrjzGnCws']
-          ]
+    # 含位置版本
+    'general': 'https://aip.baidubce.com/rest/2.0/ocr/v1/general',  # 5000/day
 
-OCR_URL = "https://aip.baidubce.com/rest/2.0/ocr/v1/idcard"  # 身份证url
-# OCR_URL = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic"
+    # 高精度版本
+    'accurate_basic': "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic",  # 500/day
+
+    # 高精度含位置版
+    'accurate': "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate"  # 50/day
+}
 
 
 """  TOKEN start """
@@ -61,15 +84,20 @@ def fetch_token(api_key, secrect_key):
               'client_id': api_key,
               'client_secret': secrect_key}
     post_data = urlencode(params)
+
     if (IS_PY3):
         post_data = post_data.encode('utf-8')
+
     req = Request(TOKEN_URL, post_data)
     result_str = None
+
     try:
-        f = urlopen(req, timeout=5)
+        f = urlopen(req, timeout=15)
         result_str = f.read()
     except URLError as err:
         print(err)
+        return None
+
     if (IS_PY3):
         result_str = result_str.decode()
 
@@ -117,7 +145,7 @@ def request(url, data):
         if (IS_PY3):
             result_str = result_str.decode()
         return result_str
-    except  URLError as err:
+    except URLError as err:
         print(err)
 
 
@@ -134,7 +162,8 @@ def demo():
     file_content = read_file('data/丁力_身份证正面照片.jpeg')
 
     # 调用文字识别服务
-    result = request(image_url, urlencode({'image': base64.b64encode(file_content)}))
+    result = request(image_url, urlencode(
+        {'image': base64.b64encode(file_content)}))
 
     # 解析返回结果
     result_json = json.loads(result)
@@ -157,16 +186,60 @@ def read_img(img_path):
         exit(1)
 
 
-def detect_idcard(img_path, api_key, secrect_key):
+def detect_idcard_json(img_path, access_que):
+    '''
+    @access_que: [[api_key, secrect_key, flag], [],...]
+    @return: access_que, json_dict
+    没 key 了就 exit(),
+    其他错误 continue
+    '''
+    # 获取有效的 key
+    if len(access_que) < 2:
+        print(access_que)
+    if len(access_que) < 1:
+        return exit(0)
+
+    api_key, secrect_key, flag = access_que[0]
+    content = detect_idcard(img_path, api_key, secrect_key, flag=flag)
+    if content is None:
+        return access_que, None
+
+    result_str = str(content, 'utf-8')
+    result_dict = json.loads(result_str)
+
+    if 'error_msg' in result_dict.keys():
+        print('error_msg from baidu.api: ',
+              result_dict['error_msg'], '    error_code: ', result_dict['error_code'])
+
+        if int(result_dict['error_code']) == 17 or int(result_dict['error_code']) == 18:
+            # api daily limit
+            access_que.pop(0)
+            return detect_idcard_json(img_path, access_que)
+        else:
+            # empty image and so on
+            return access_que, None
+
+    return access_que, result_dict
+
+
+def detect_idcard(img_path, api_key, secrect_key, flag='general'):
     # 获取access token
     token = fetch_token(api_key, secrect_key)
 
+    if token is None:
+        return None
+
     # 拼接通用文字识别高精度url
-    image_url = OCR_URL + "?access_token=" + token
+    image_url = OCR_URL[flag] + "?access_token=" + token
 
     # 参数image：图像base64编码
     image = read_img(img_path)
-    params = {"image": image, "id_card_side": "front", "detect_direction": "true"}
+    params = {
+        "image": image,
+        "id_card_side": "front",
+        "detect_direction": "true",
+        "probability": "true"
+    }
     params = urlencode(params)
     request = Request(image_url, params.encode('utf-8'))
     request.add_header('Content-Type', 'application/x-www-form-urlencoded')
@@ -179,47 +252,66 @@ def detect_idcard(img_path, api_key, secrect_key):
         return None
 
 
-def idcard_detect_demo():
+def idcard_detect_demo(DEBUG=True):
     # 使用百度api标注
-    # source_dir = '/home/wurui/Desktop/img'
     root_img_dir = '/home/wurui/idcard/data/org/img'
+    # root_img_dir = '/home/wurui/Desktop/test/img'
     root_label_dir = '/home/wurui/idcard/data/org/label'
-    source_parts = ['part5','part2','part3','part4', 'part1']
-    # source_parts = ['part3']
+    # root_label_dir = '/home/wurui/Desktop/test/label'
+    source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
 
     labeled_count = 0
 
-    # 每一个账号能调用500次
+    DETECT_LIMIT = False
+
+    # 每一个账号调用次数有限制
+    api_keys_que = list()
     for api_key, secrect_key in ACCESS:
+        for flag in ['accurate', 'general']:
+            api_keys_que.append([api_key, secrect_key, flag])
 
-        # 标注没有label的图像
-        for source_part in source_parts:
-            part_img_dir = os.path.join(root_img_dir, source_part)
-            part_label_dir = os.path.join(root_label_dir, source_part)
+    api_key, secrect_key, flag = api_keys_que[0]
 
-            # 已标注的文件名
-            labeled_files = [x.split('.')[0] for x in os.listdir(part_label_dir)]
-            labeled_count = len(labeled_files)
+    # 标注没有label的图像
+    for source_part in source_parts:
+        part_img_dir = os.path.join(root_img_dir, source_part)
+        part_label_dir = os.path.join(root_label_dir, source_part)
 
-            for img_file in os.listdir(part_img_dir):
-                if img_file.split('.')[0] not in labeled_files:
+        if not os.path.exists(part_label_dir):
+            os.mkdir(part_label_dir)
 
-                    # 调用api
-                    content = detect_idcard(os.path.join(part_img_dir, img_file), api_key, secrect_key)
-                    result_str = str(content, 'utf-8')
-                    result_dict = json.loads(result_str)
-                    if 'error_msg' in result_dict.keys():
-                        print('error_msg from baidu.api', result_dict['error_msg'])
-                        break
+        # 已标注的文件名
+        labeled_files = [x.split('.')[0]
+                         for x in os.listdir(part_label_dir)]
+        labeled_count = len(labeled_files)
 
-                    save_json(result_dict, os.path.join(part_label_dir, img_file.split('.')[0] + '.json'))
-                    labeled_count += 1
-                    print('part: {}     labeled count: {}'.format(source_part, labeled_count))
+        for img_file in os.listdir(part_img_dir):
+            if img_file.split('.')[0] in labeled_files:
+                continue
+
+            # 对没标注的图片  调用api
+            api_keys_que, result_dict = detect_idcard_json(os.path.join(
+                part_img_dir, img_file), api_keys_que)
+
+            if result_dict is None:
+                continue
+
+            print('\ntarget file: ', os.path.join(
+                part_img_dir, img_file))
+            print('----> keys num: ', len(api_keys_que))
+            if len(api_keys_que) > 0:
+                print('---->key: ', api_keys_que[0])
+
+            save_json(result_dict, os.path.join(
+                part_label_dir, img_file.split('.')[0] + '.json'))
+            labeled_count += 1
+            print('part: {}     labeled count: {}'.format(
+                source_part, labeled_count))
 
 
-def detect_imgdir(source_dir):
+def detect_imgdir(source_dir, flag='general'):
     for img in os.listdir(source_dir):
-        content = detect_idcard(os.path.join(source_dir, img))
+        content = detect_idcard(os.path.join(source_dir, img), flag=flag)
         result_str = str(content, 'utf-8')
         result_json_dict = json.loads(result_str)
         with open(os.path.join(source_dir, img.split('.')[0] + '.json'), "w") as f:
@@ -255,11 +347,18 @@ def check_result_comlete(json_dict):
     return True
 
 
-def check_vision():
+def check_vision(flag='general'):
+    '''
+    @flag: idcard, normal, location
+    '''
+
     # 查看原始标注label是否准确
+    # root_img_dir = '/home/wurui/Desktop/test/img'
     root_img_dir = '/home/wurui/idcard/data/org/img'
+    # root_label_dir = '/home/wurui/Desktop/test/label'
     root_label_dir = '/home/wurui/idcard/data/org/label'
     source_parts = ['part2', 'part3', 'part4', 'part5', 'part1']
+
     ex_names = ['.jpg', '.jpeg', '.JPG', '.JPEG']
 
     remove_difficult_count = 0
@@ -271,33 +370,65 @@ def check_vision():
         part_img_dir = os.path.join(root_img_dir, source_part)
         part_label_dir = os.path.join(root_label_dir, source_part)
 
+        if not os.path.exists(part_label_dir):
+            continue
+
         # 已标注的文件名
         for fil in os.listdir(part_label_dir):
+            # 对应的图像是否存在
+            img_name = None
+            try:
+                img_name = [os.path.join(part_img_dir, fil.split('.')[0] + ex_name) for ex_name in ex_names if
+                            os.path.exists(
+                                os.path.join(
+                                    part_img_dir, fil.split('.')[0] + ex_name))][0]
 
-            img_name = [os.path.join(part_img_dir, fil.split('.')[0] + ex_name) for ex_name in ex_names if
-                        os.path.exists(
-                            os.path.join(part_img_dir, fil.split('.')[0] + ex_name)
-                        )][0]
+            except:
+                pass
+
+            if img_name is None:
+                continue
 
             label_name = os.path.join(part_label_dir, fil)
             label_dic = read_json(label_name)
-            # print(label_dic)
+            print(label_dic, '\n\n')
 
             image = cv2.imread(img_name, cv2.IMREAD_COLOR)
-            # print('\n\n', img_name)
-            words_result = label_dic['words_result']
-            for item in items:
-                # 打印检测结果
-                if item not in words_result.keys():
-                    continue
-                # print(item, words_result[item]['words'])
-                top, w, h, left = words_result[item]['location']['top'], words_result[item]['location']['width'], \
-                                  words_result[item]['location']['height'], words_result[item]['location']['left']
-                cv2.rectangle(image, (left, top), (left + w, top + h), (0, 255, 0), 2)
 
-            # 打印图像检测质量状态
-            image_status = label_dic['image_status']
-            # print('image_status: ', image_status)
+            words_result = label_dic['words_result']
+
+            if flag == 'idcard':
+                for item in items:
+                    # 打印检测结果
+                    if item not in words_result.keys():
+                        continue
+                    # print(item, words_result[item]['words'])
+                    top, w, h, left = words_result[item]['location']['top'], words_result[item]['location']['width'], \
+                        words_result[item]['location']['height'], words_result[item]['location']['left']
+                    cv2.rectangle(image, (left, top),
+                                  (left + w, top + h), (0, 255, 0), 2)
+
+                    # 打印图像检测质量状态
+                    image_status = label_dic['image_status']
+                    # 图像检测不过关的,移动到difficult文件夹
+                    if image_status != 'normal':
+                        print('difficult img: ', img_name)
+                        difficult_img_path = os.path.join(
+                            root_img_dir, 'difficult', os.path.split(img_name)[-1])
+                        print('move to path:', difficult_img_path)
+                        # shutil.move(img_name, difficult_img_path)
+                        print('remove label: ', label_name)
+                        # os.remove(label_name)
+                        remove_difficult_count += 1
+                        print('remove difficult count:',
+                              remove_difficult_count)
+
+            elif flag == 'general':
+                for item in words_result:
+                    top, w, h, left = item['location']['top'], item['location']['width'], \
+                        item['location']['height'], item['location']['left']
+                    cv2.rectangle(image, (left, top),
+                                  (left + w, top + h), (0, 255, 0), 2)
 
             # 图像转正
             if 'direction' not in label_dic.keys():
@@ -308,33 +439,27 @@ def check_vision():
 
             # print('direction: ', image_direction)
             if image_direction == '1':
-                image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE, image)
+                image = cv2.rotate(
+                    image, cv2.ROTATE_90_COUNTERCLOCKWISE, image)
             elif image_direction == '2':
                 image = cv2.rotate(image, cv2.ROTATE_180, image)
             elif image_direction == '3':
                 image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE, image)
 
-            # 图像检测不过关的,移动到difficult文件夹
-            if image_status != 'normal':
-                print('difficult img: ', img_name)
-                difficult_img_path = os.path.join(root_img_dir, 'difficult', os.path.split(img_name)[-1])
-                print('move to path:', difficult_img_path)
-                # shutil.move(img_name, difficult_img_path)
-                print('remove label: ', label_name)
-                # os.remove(label_name)
-                image = resizeImgToScreen(image)
-                remove_difficult_count += 1
-                print('remove difficult count:', remove_difficult_count)
-                # cv2.imshow('', image)
-                # cv2.waitKey()
+            image = resizeImgToScreen(image)
+
+            cv2.imshow('', image)
+            cv2.waitKey()
 
 
 def resizeImgToScreen(img):
     # 缩放到适合屏幕显示
     if img.shape[0] > img.shape[1]:
-        img = cv2.resize(img, (int(img.shape[1] * 960 / img.shape[0]), 960), img)
+        img = cv2.resize(
+            img, (int(img.shape[1] * 960 / img.shape[0]), 960), img)
     else:
-        img = cv2.resize(img, (1080, int(img.shape[0] * 1080 / img.shape[1])), img)
+        img = cv2.resize(
+            img, (1080, int(img.shape[0] * 1080 / img.shape[1])), img)
     return img
 
 
@@ -342,16 +467,18 @@ def file_convert_to_jpg():
     # 图片格式统一到jpeg
     root_img_dir = '/home/wurui/idcard/data/org/img'
     root_label_dir = '/home/wurui/idcard/data/org/label'
-    source_parts = ['part2', 'part3', 'part4', 'part5', 'part1']
+    source_parts = ['part5',  'part2', 'part3', 'part4',  'part1']
 
     for source_part in source_parts:
         part_img_dir = os.path.join(root_img_dir, source_part)
         for fil in os.listdir(part_img_dir):
             if fil.split('.')[1] not in ['jpg', 'JPG', 'jpeg', 'JPEG']:
-                image = cv2.imread(os.path.join(part_img_dir, fil), cv2.IMREAD_COLOR)
+                image = cv2.imread(os.path.join(
+                    part_img_dir, fil), cv2.IMREAD_COLOR)
                 # cv2.imshow('', image)
                 # cv2.waitKey()
-                cv2.imwrite(os.path.join(part_img_dir, fil.split('.')[0] + '.jpg'), image)
+                cv2.imwrite(os.path.join(
+                    part_img_dir, fil.split('.')[0] + '.jpg'), image)
 
 
 def remove_error_label():
@@ -401,7 +528,7 @@ def rotate_location_label_dict(label_dict, items, image, flag):
             continue
 
         top, w, h, left = words_result[item]['location']['top'], words_result[item]['location']['width'], \
-                          words_result[item]['location']['height'], words_result[item]['location']['left']
+            words_result[item]['location']['height'], words_result[item]['location']['left']
 
         xmin, ymin, xmax, ymax = rotate_coordinates(left, top, left + w, top + h,
                                                     image.shape[0], image.shape[1], flag)
@@ -438,11 +565,21 @@ def pick_normal_label_and_rotate_to_front():
 
         # 已标注的文件名
         for fil in os.listdir(part_label_dir):
-            # 图像名
-            img_name = [os.path.join(part_img_dir, fil.split('.')[0] + ex_name) for ex_name in ex_names if
-                        os.path.exists(
-                            os.path.join(part_img_dir, fil.split('.')[0] + ex_name)
-                        )][0]
+            # 对应的图像是否存在
+            img_name = None
+            try:
+                img_name = [os.path.join(part_img_dir, fil.split('.')[0] + ex_name) for ex_name in ex_names if
+                            os.path.exists(
+                                os.path.join(
+                                    part_img_dir, fil.split('.')[0] + ex_name)
+                )][0]
+
+            except:
+                pass
+
+            if img_name is None:
+                continue
+
             image = cv2.imread(img_name, cv2.IMREAD_COLOR)
 
             # 标签名
@@ -450,11 +587,13 @@ def pick_normal_label_and_rotate_to_front():
             label_dic = read_json(label_name)
 
             # 目标文件名
-            normal_img_path = os.path.join(normal_img_dir, source_part, os.path.split(img_name)[-1])
-            normal_label_path = os.path.join(normal_label_dir, source_part, os.path.split(label_name)[-1])
+            normal_img_path = os.path.join(
+                normal_img_dir, source_part, os.path.split(img_name)[-1])
+            normal_label_path = os.path.join(
+                normal_label_dir, source_part, os.path.split(label_name)[-1])
 
             if os.path.exists(normal_label_path) and os.path.exists(normal_label_path):
-                count+=1
+                count += 1
                 continue
 
             # 跳过检测结果不好的图像
@@ -470,13 +609,16 @@ def pick_normal_label_and_rotate_to_front():
 
             # 旋转图像 & 修改label坐标
             if image_direction == 1:
-                label_dic = rotate_location_label_dict(label_dic, items, image, 'clockwise90')
+                label_dic = rotate_location_label_dict(
+                    label_dic, items, image, 'clockwise90')
                 image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
             elif image_direction == 2:
-                label_dic = rotate_location_label_dict(label_dic, items, image, 'clockwise180')
+                label_dic = rotate_location_label_dict(
+                    label_dic, items, image, 'clockwise180')
                 image = cv2.rotate(image, cv2.ROTATE_180)
             elif image_direction == 3:
-                label_dic = rotate_location_label_dict(label_dic, items, image, 'clockwise270')
+                label_dic = rotate_location_label_dict(
+                    label_dic, items, image, 'clockwise270')
                 cv2.imshow(' old', image)
                 image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 cv2.imshow(' rotate', image)
@@ -499,19 +641,19 @@ def pick_normal_label_and_rotate_to_front():
                     continue
                 # print(item, words_result[item]['words'])
                 top, w, h, left = words_result[item]['location']['top'], words_result[item]['location']['width'], \
-                                  words_result[item]['location']['height'], words_result[item]['location']['left']
-                cv2.rectangle(new_img, (left, top), (left + w, top + h), (0, 255, 0), 2)
+                    words_result[item]['location']['height'], words_result[item]['location']['left']
+                cv2.rectangle(new_img, (left, top),
+                              (left + w, top + h), (0, 255, 0), 2)
             new_img = resizeImgToScreen(new_img)
             cv2.imshow('new', new_img)
             cv2.waitKey()
-
 
             # break
         # break
 
 
 def conver_img_file_to_jpg():
-    img_dir =   '/home/wurui/idcard/data/org/img/part5'
+    img_dir = '/home/wurui/idcard/data/org/img/part5'
     for img in os.listdir(img_dir):
         image = cv2.imread(os.path.join(img_dir, img), cv2.IMREAD_COLOR)
         new_img = os.path.join(img_dir, img.split('.')[0]+'.jpg')
@@ -523,5 +665,5 @@ if __name__ == '__main__':
     # conver_img_file_to_jpg()
     idcard_detect_demo()
     remove_error_label()
-    # check_vision()
-    pick_normal_label_and_rotate_to_front()
+    # check_vision(flag='general')
+    # pick_normal_label_and_rotate_to_front()
