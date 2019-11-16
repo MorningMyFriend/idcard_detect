@@ -16,22 +16,29 @@ def cut_exRect_from_img(img, x1, y1, w, h, exw=5, exh=5):
     return img[y1:y2, x1:x2]
 
 
-def cut_txtline_from_front_img(thresh=0.90, DEBUG=False):
-    # 产生 crnn 训练样本
-    # 百度api, 含位置版本标注好
-    # 从身份证正面读取label,切割成条, 并产生txt
+def cut_txtline_from_front_img(thresh_avg=0.99, thresh_min=0.96, DEBUG=False):
+    ''' 
+    产生 crnn 训练样本
+    百度api, 含位置版本标注好
+    从身份证正面读取label,切割成条, 并产生txt
+
+    筛选条件：识别阈值／文本区域长宽比
+    '''
+
     # root_img_dir = '/home/wurui/Desktop/test/img'
     root_img_dir = '/home/wurui/idcard/data/org/img'
     # root_label_dir = '/home/wurui/Desktop/test/label'
-    root_label_dir = '/home/wurui/idcard/data/org/label'
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
 
-    result_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/img'
-    result_label_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/label'
+    result_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/img'
+    result_label_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/label'
 
-    source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
-    source_parts = ['part5']
+    # source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
+    source_parts = ['part1']
 
     ex_names = ['.jpg', '.jpeg', '.JPG', '.JPEG']
+
+    count = 0
 
     # 登记已经被裁剪过的图
     already_cut_files = []
@@ -101,44 +108,51 @@ def cut_txtline_from_front_img(thresh=0.90, DEBUG=False):
                 # 文本内容
                 content = item['words']
 
-                # 识别概率阈值
-                probability = item['probability']['average']
-                if probability < thresh:
-                    continue
+                # 识别概率 筛选
+                probability_avg = float(item['probability']['average'])
+                probability_min = float(item['probability']['min'])
 
-                # 切割出 txtline, 并转正
-                txtline_img = cut_exRect_from_img(
-                    img, left, top, w, h, exw=0, exh=0)
+                # print('avg: %.2f  min: %.2f' %
+                #       (probability_avg, probability_min))
 
-                if direction == '1':
-                    txtline_img = cv2.rotate(
-                        txtline_img, cv2.ROTATE_90_CLOCKWISE)
-                elif direction == '2':
-                    txtline_img = cv2.rotate(
-                        txtline_img, cv2.ROTATE_180)
-                elif direction == '3':
-                    txtline_img = cv2.rotate(
-                        txtline_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                if probability_avg > thresh_avg or (probability_avg > 0.98 and probability_min > 0.96):
 
-                # 图像比例筛选
-                if float(txtline_img.shape[1])/float(txtline_img.shape[0]) < 3.0:
-                    continue
+                    # 切割出 txtline, 并转正
+                    txtline_img = cut_exRect_from_img(
+                        img, left, top, w, h, exw=0, exh=0)
 
-                # 保存裁剪图
-                cv2.imwrite(os.path.join(result_img_part_dir, label_name.split('.')[0] + '_' + str(id) + '.jpg'),
-                            txtline_img)
+                    if direction == '1':
+                        txtline_img = cv2.rotate(
+                            txtline_img, cv2.ROTATE_90_CLOCKWISE)
+                    elif direction == '2':
+                        txtline_img = cv2.rotate(
+                            txtline_img, cv2.ROTATE_180)
+                    elif direction == '3':
+                        txtline_img = cv2.rotate(
+                            txtline_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-                # 保存txt内容label
-                with open(os.path.join(result_label_part_dir, label_name.split('.')[0] + '_' + str(id) + '.txt'), 'w',
-                          encoding='utf-8') as txtfile:
-                    txtfile.write(content)
-                    txtfile.close()
+                    # 图像比例筛选
+                    if float(txtline_img.shape[1])/float(txtline_img.shape[0]) < 4.0:
+                        continue
 
-                # debug
-                if DEBUG:
-                    print('content:', content)
-                    cv2.imshow('txtline', txtline_img)
-                    cv2.waitKey()
+                    # 保存裁剪图
+                    cv2.imwrite(os.path.join(result_img_part_dir, label_name.split('.')[0] + '_' + str(id) + '.jpg'),
+                                txtline_img)
+
+                    # 保存txt内容label
+                    with open(os.path.join(result_label_part_dir, label_name.split('.')[0] + '_' + str(id) + '.txt'), 'w',
+                              encoding='utf-8') as txtfile:
+                        txtfile.write(content)
+                        txtfile.close()
+
+                    count += 1
+                    print(count)
+
+                    # debug
+                    if DEBUG:
+                        print('content:', content)
+                        cv2.imshow('txtline', txtline_img)
+                        cv2.waitKey()
 
 
 def binarilize(img):
@@ -206,7 +220,7 @@ def crop_resize(img):
     return bkg
 
 
-def test():
+def gan_train_data():
     img_dir = '/home/wurui/idcard/data/TrainGanCRNN/img'
     bimg_dir = '/home/wurui/idcard/data/TrainGanCRNN/bimg'
     count = 0
@@ -240,26 +254,27 @@ def resize_256():
 
 
 def convert_label_train_crnn():
-    root_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/img'
-    root_label_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/label'
+    root_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/img'
+    root_label_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/label'
 
     # 所有part的图片重新命名移动到一起
-    result_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/crnn'
+    result_img_dir = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/crnn'
     # 制作 lmdb 的文件
-    result_train_txt_path = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/train.txt'
-    result_test_txt_path = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/test.txt'
+    result_train_txt_path = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/train.txt'
+    result_test_txt_path = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/test.txt'
     # 中文和数字标签对应文件
-    dict_txt = '/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/label_dict.txt'
+    old_label_map_path = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/label_map.txt'
+    dict_txt = '/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/label_dict.txt'
 
-    # source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
-    source_parts = ['part5']
+    source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
+    # source_parts = ['part3', 'part5']
     ex_names = ['.jpg', '.jpeg', '.JPG', '.JPEG']
 
     # 是否全部图像写入train.txt
     IF_ALL = False
 
     # 测试集比例
-    RATIO = 9 / 1
+    RATIO = 20 / 1
 
     result_train_txt = open(result_train_txt_path, 'w')
     result_test_txt = open(result_test_txt_path, 'w')
@@ -267,11 +282,26 @@ def convert_label_train_crnn():
     # 中文--数字 label对应表
     word_map = dict()  # dict = { a:0, b:1, ...}
 
+    with open(old_label_map_path, 'r') as fil:
+        lines = fil.readlines()
+        for line in lines:
+            line = line.strip('\n')
+            if line not in word_map.keys():
+                word_map[line] = len(word_map.keys())
+
     # 重新命名图片
     COUNT = 0
 
     # 标注没有label的图像
     for source_part in source_parts:
+        # part1 的　训练测试比例调整
+        if source_part == 'part1':
+            RATIO = 56/1
+        elif source_part == 'part3':
+            RATIO = 15/1
+        else:
+            RATIO = 20/1
+
         part_label_dir = os.path.join(root_label_dir, source_part)
         part_img_dir = os.path.join(root_img_dir, source_part)
 
@@ -303,7 +333,7 @@ def convert_label_train_crnn():
                 continue
 
             # 复制图片, 并用英文数字重命名
-            new_img_path = os.path.join(result_img_dir, str(COUNT)+'.jpg')
+            new_img_path = os.path.join(result_img_dir, str(COUNT)+'-real.jpg')
             shutil.copy(img_path, new_img_path)
 
             # 写入对应的汉字标签  转成  数字标签
@@ -334,24 +364,63 @@ def convert_label_train_crnn():
                     result_train_txt.writelines(label+'\n')
 
             COUNT += 1
+            print(COUNT)
 
     result_train_txt.close()
     result_test_txt.close()
 
+    # 保存　word_map　中文字符序号对照表
+    with open(dict_txt, 'w') as fi:
+        word_map = sorted(word_map.items(),
+                          key=lambda x: x[1], reverse=False)
+        for item in word_map:
+            fi.write(item[0]+'\n')
+
+
+def check_train_test_txt(img_folder, txt_path, result_path, max_num=5000):
+    '''
+    逐行读取　train.txt　或　test.txt　的图片名，
+    删除不在　img_folder　中的行
+    '''
+    img_names = set(os.listdir(img_folder))
+
+    count = 0
+
+    result_f = open(result_path, 'w')
+
+    with open(txt_path, 'r') as f:
+        line = f.readline()
+        while True:
+            if line is None or line == '':
+                break
+
+            name = line.split(' ')[0]
+            if name in img_names:
+                result_f.write(line)
+            count += 1
+            if count > max_num:
+                break
+            line = f.readline()
+
+    result_f.close()
+
 
 if __name__ == '__main__':
-    # l = [str(x) for x in range(10)]
-    # print(l)
-    # random.shuffle(l)
+    # 生成ＣＲＮＮ训练数据
 
-    # 从标签文件中把文字行 cut 出来,生成对应的 txt
+    # 1. 从标签文件中把文字行 cut 出来,生成对应的 txt
     # 用原图像名, 分辨跳过已经裁剪过的图像
-    # cut_txtline_from_front_img(DEBUG=True)
+    # cut_txtline_from_front_img(DEBUG=False)
 
-    # 从 txtline 图像和 txt 标签, 生成 lmdb 原始材料
+    # 2. 从 txtline 图像和 txt 标签, 生成 lmdb 原始材料
     # 把图像和txt改名成英文, 生产汉字的对照序列号标注文件train.txt 和 对应的汉字--数字dict.txt
     convert_label_train_crnn()
 
-    # binary()
-    # test()
-    # resize()
+    # 数据检查
+    # img_folder = '/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset/images'
+    # txt = '/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset/train-org.txt'
+    # rtxt = '/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset/train.txt'
+    # check_train_test_txt(img_folder, txt, rtxt)
+
+    # 生成　ＧＡＮ　训练数据
+    # gan_train_data()

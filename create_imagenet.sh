@@ -3,16 +3,26 @@
 # N.B. set the path to the imagenet train + val data dirs
 set -e
 
-# 生成的LMDB文件位置
-EXAMPLE=/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0
-# train.txt 和 test.txt 的位置
-DATA=/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0
 # caffe/build/tools的位置
 TOOLS=/home/wurui/idcard/caffe_ocr_for_linux/build/tools
 
-# 训练集  测试集 位置, 最后的 '/' 别漏了
-TRAIN_DATA_ROOT=/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/img/part5/
-VAL_DATA_ROOT=/home/wurui/idcard/data/TrainCRNN-prob0.9-ratio3.0/img/part5/
+# 生成的LMDB文件位置
+EXAMPLE=/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0
+# EXAMPLE=/home/wurui/idcard/Synthetic_Chinese_String_Dataset
+
+# train.txt 和 test.txt 的位置
+DATA=/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0
+# DATA=/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset
+
+# 训练集,测试集 图片的位置, 最后的 '/' 别漏了
+# TRAIN_DATA_ROOT=/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset/images/
+# VAL_DATA_ROOT=/home/wurui/idcard/Synthetic_Chinese_String_Dataset/Dataset/images/
+TRAIN_DATA_ROOT=/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/images/
+VAL_DATA_ROOT=/home/wurui/idcard/data/TrainCRNN-prob0.99-ratio4.0/images/
+
+# 删除已经存在的
+rm -rf $EXAMPLE/idcard_train_lmdb
+rm -rf $EXAMPLE/idcard_test_lmdb
 
 # Set RESIZE=true to resize the images to 256x256. Leave as false if images have
 # already been resized using another tool.
@@ -44,7 +54,7 @@ echo "Creating train lmdb..."
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_height=$RESIZE_HEIGHT \
     --resize_width=$RESIZE_WIDTH \
-    --shuffle \
+    --shuffle=1 \
     $TRAIN_DATA_ROOT \
     $DATA/train.txt \
     $EXAMPLE/idcard_train_lmdb
@@ -54,7 +64,7 @@ echo "Creating test lmdb..."
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_height=$RESIZE_HEIGHT \
     --resize_width=$RESIZE_WIDTH \
-    --shuffle \
+    --shuffle=1 \
     $VAL_DATA_ROOT \
     $DATA/test.txt \
     $EXAMPLE/idcard_test_lmdb

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" addBOMForNewFiles="with NO BOM" />
+  <component name="Encoding" addBOMForNewFiles="with NO BOM">
+    <file url="file://$PROJECT_DIR$/k" charset="GBK" />
+    <file url="file://$USER_HOME$/idcard/Synthetic_Chinese_String_Dataset/Synthetic Chinese String Dataset caffe model/densenet-res-blstm/label.txt" charset="GBK" />
+  </component>
 </project>

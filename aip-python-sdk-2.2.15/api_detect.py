@@ -6,6 +6,7 @@ import json
 import base64
 import cv2
 import shutil
+import time
 
 # 保证兼容python2以及python3
 IS_PY3 = sys.version_info.major == 3
@@ -194,10 +195,12 @@ def detect_idcard_json(img_path, access_que):
     其他错误 continue
     '''
     # 获取有效的 key
+    if access_que is None:
+        return None, None
     if len(access_que) < 2:
         print(access_que)
     if len(access_que) < 1:
-        return exit(0)
+        return None, None
 
     api_key, secrect_key, flag = access_que[0]
     content = detect_idcard(img_path, api_key, secrect_key, flag=flag)
@@ -215,6 +218,8 @@ def detect_idcard_json(img_path, access_que):
             # api daily limit
             access_que.pop(0)
             return detect_idcard_json(img_path, access_que)
+        elif result_dict['error_msg'] == ' empty image' or int(result_dict['error_code']) == 216200:
+            print('empty img_path: ', img_path)
         else:
             # empty image and so on
             return access_que, None
@@ -255,9 +260,9 @@ def detect_idcard(img_path, api_key, secrect_key, flag='general'):
 def idcard_detect_demo(DEBUG=True):
     # 使用百度api标注
     root_img_dir = '/home/wurui/idcard/data/org/img'
-    # root_img_dir = '/home/wurui/Desktop/test/img'
-    root_label_dir = '/home/wurui/idcard/data/org/label'
-    # root_label_dir = '/home/wurui/Desktop/test/label'
+
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
+
     source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
 
     labeled_count = 0
@@ -280,6 +285,9 @@ def idcard_detect_demo(DEBUG=True):
         if not os.path.exists(part_label_dir):
             os.mkdir(part_label_dir)
 
+        if api_keys_que is None or len(api_keys_que) < 1:
+            break
+
         # 已标注的文件名
         labeled_files = [x.split('.')[0]
                          for x in os.listdir(part_label_dir)]
@@ -295,6 +303,9 @@ def idcard_detect_demo(DEBUG=True):
 
             if result_dict is None:
                 continue
+
+            if api_keys_que is None or len(api_keys_que) < 1:
+                break
 
             print('\ntarget file: ', os.path.join(
                 part_img_dir, img_file))
@@ -353,11 +364,12 @@ def check_vision(flag='general'):
     '''
 
     # 查看原始标注label是否准确
-    # root_img_dir = '/home/wurui/Desktop/test/img'
+
     root_img_dir = '/home/wurui/idcard/data/org/img'
-    # root_label_dir = '/home/wurui/Desktop/test/label'
-    root_label_dir = '/home/wurui/idcard/data/org/label'
-    source_parts = ['part2', 'part3', 'part4', 'part5', 'part1']
+
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
+    source_parts = ['part5']
+    # source_parts = ['part2', 'part3', 'part4', 'part5', 'part1']
 
     ex_names = ['.jpg', '.jpeg', '.JPG', '.JPEG']
 
@@ -466,7 +478,7 @@ def resizeImgToScreen(img):
 def file_convert_to_jpg():
     # 图片格式统一到jpeg
     root_img_dir = '/home/wurui/idcard/data/org/img'
-    root_label_dir = '/home/wurui/idcard/data/org/label'
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
     source_parts = ['part5',  'part2', 'part3', 'part4',  'part1']
 
     for source_part in source_parts:
@@ -483,7 +495,7 @@ def file_convert_to_jpg():
 
 def remove_error_label():
     # 删除检测返回error的label
-    root_label_dir = '/home/wurui/idcard/data/org/label'
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
     source_parts = ['part2', 'part3', 'part4', 'part5', 'part1']
 
     count = 0
@@ -547,7 +559,7 @@ def pick_normal_label_and_rotate_to_front():
     # 挑选 检测结果normal的图像, 转至正面, 修改label
 
     root_img_dir = '/home/wurui/idcard/data/org/img'
-    root_label_dir = '/home/wurui/idcard/data/org/label'
+    root_label_dir = '/home/wurui/idcard/data/org/labels-git'
     normal_img_dir = '/home/wurui/idcard/data/normal-front-0dree/img'
     normal_label_dir = '/home/wurui/idcard/data/normal-front-0dree/label'
     source_parts = ['part5', 'part2', 'part3', 'part4', 'part1']
@@ -661,9 +673,42 @@ def conver_img_file_to_jpg():
         cv2.imwrite(new_img, image)
 
 
+def remove_empty_img():
+    # 删除检测返回error的label
+    root_label_dir = '/home/wurui/idcard/data/org/img'
+    # already checked: 'part2', 'part3', 'part4',  'part1'
+    source_parts = ['part5']
+
+    count = 0
+
+    for source_part in source_parts:
+        num = 0
+        for fil in os.listdir(os.path.join(root_label_dir, source_part)):
+            # print('part: %s   num:%d   empty count:%d' %
+            #       (source_part, num, count))
+            num += 1
+            img_path = os.path.join(root_label_dir, source_part, fil)
+            img = cv2.imread(img_path)
+
+            if img is None or img.shape[0] < 1 or img.shape[1] < 1:
+                print(img_path)
+                count += 1
+                os.remove(img_path)
+    print('empty count: ', count)
+
+
 if __name__ == '__main__':
+    # 剔除空图片
+    # remove_empty_img()
+
     # conver_img_file_to_jpg()
-    idcard_detect_demo()
-    remove_error_label()
-    # check_vision(flag='general')
+    # while True:
+    #     print('fuck one more time')
+    #     idcard_detect_demo()
+
+    #     # 剔除 label 中含 error msg的标签
+    #     remove_error_label()
+    #     time.sleep(60)
+
+    check_vision(flag='general')
     # pick_normal_label_and_rotate_to_front()
